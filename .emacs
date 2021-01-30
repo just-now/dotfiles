@@ -1,3 +1,4 @@
+(server-start)
 (setq c-default-style '((c-mode . "linux") (awk-mode . "awk") (other . "gnu")))
 (setq enable-local-variables :safe)
 
@@ -10,16 +11,17 @@
 (setq scroll-conservatively     3)
 (set-default 'truncate-lines    t)
 (column-number-mode             t)
-(tool-bar-mode			0)
+(tool-bar-mode                  0)
+(setq-default indicate-empty-lines t)
 (setq calendar-week-start-day 1 european-calendar-style t)
 (progn (require 'uniquify) (setq uniquify-buffer-name-style 'forward))
 
 ;; Semi-automatic rstripping
 (defun delete-trailing-whitespace-if-confirmed ()
   (when (and (save-excursion (goto-char (point-min))
-			     (re-search-forward "[[:blank:]]$" nil t))
-	     (y-or-n-p (format "Delete trailing whitespace from %s? "
-			       (buffer-name))))
+                             (re-search-forward "[[:blank:]]$" nil t))
+             (y-or-n-p (format "Delete trailing whitespace from %s? "
+                               (buffer-name))))
     (delete-trailing-whitespace)))
 (add-hook 'before-save-hook 'delete-trailing-whitespace-if-confirmed)
 
@@ -39,7 +41,7 @@
 (global-set-key (kbd "M-g s") 'magit-status)
 (global-set-key (kbd "M-g i") 'counsel-imenu)
 (global-set-key (kbd "M-g j") 'ace-jump-line-mode)
-;; lsp-ivy-workspace-symbol
+(global-set-key (kbd "M-g o") 'org-capture)
 
 ;; LSP and C++
 (add-hook 'c-mode-common-hook 'lsp)
@@ -74,20 +76,50 @@
   (org-superstar-headline-bullets-list '("◉" "○" "●" "○" "●" "○" "●")))
 
 (setq org-default-notes-file "~/Private/org/notes.org")
-(setq org-agenda-files (list "~/Private/org/notes.org"
-			     "~/Private/org/test.org"))
+(setq org-agenda-files (list "~/Private/org/notes.org"))
+
+(defun transform-square-brackets-to-round-ones(string-to-transform)
+  (concat (mapcar #'(lambda (c) (if (equal c ?[) ?\( (if (equal c ?]) ?\) c))) string-to-transform)))
 (setq org-capture-templates
       `(("i" "inbox" entry (file "~/Private/org/notes.org")
          "* TODO %?")
-        ("l" "link" entry (file "~/Private/org/notes.org")
-         "* TODO %(org-cliplink-capture)" :immediate-finish t)
-        ("c" "org-protocol-capture" entry (file "~/Private/org/notes.org")
-         "* TODO [[%:link][%:description]]\n\n %i" :immediate-finish t)))
+        ("p" "Protocol" entry (file "~/Private/org/notes.org")
+         "* %^{Title}\nSource: %u, [[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]]\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
+        ("L" "Protocol Link" entry (file "~/Private/org/notes.org")
+         "* %? [[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]]\n")))
 
-;; (setq org-log-done 'time)
+
+;; Org Roam!
+(use-package org-roam
+      :ensure t
+      :hook
+      (after-init . org-roam-mode)
+      :custom
+      (org-roam-directory "~/Private/org/roam")
+      (org-roam-graph-viewer "open")
+      :bind (:map org-roam-mode-map
+              (("C-c n l" . org-roam)
+               ("C-c n f" . org-roam-find-file)
+               ("C-c n g" . org-roam-graph))
+              :map org-mode-map
+              (("C-c n i" . org-roam-insert))
+              (("C-c n I" . org-roam-insert-immediate))))
+
 (require 'org-protocol)
+(require 'org-roam-protocol)
+(require 'org-roam-server)
+(setq org-roam-server-host "127.0.0.1"
+      org-roam-server-port 8080
+      org-roam-server-export-inline-images t
+      org-roam-server-authenticate nil
+;;      org-roam-server-network-poll t
+;;      org-roam-server-network-arrows t
+      org-roam-server-network-label-truncate t
+      org-roam-server-network-label-truncate-length 60
+      org-roam-server-network-label-wrap-length 20)
 
 
+;; Which key mode helper
 (use-package which-key
   :init (which-key-mode 1)
   :diminish which-key-mode
@@ -105,8 +137,8 @@
          ("C-x C-f" . counsel-find-file)
          ("C-h f"   . counsel-describe-function)
          ("C-h v"   . counsel-describe-variable)
-	 ("C-x b"   . counsel-switch-buffer)
-	 ("<f5>"    . counsel-compile)))
+         ("C-x b"   . counsel-switch-buffer)
+         ("<f5>"    . counsel-compile)))
 
 ;; Python LSP
 (add-hook 'python-mode-hook #'lsp)
@@ -118,4 +150,3 @@
                                        xref-find-references))
 ;; (setq flycheck-list-errors nil)
 (setq flycheck-highlighting-mode nil)
-
