@@ -150,3 +150,16 @@
                                        xref-find-references))
 ;; (setq flycheck-list-errors nil)
 (setq flycheck-highlighting-mode nil)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(dockerfile-mode yasnippet yaml-mode xref which-key use-package solarized-theme projectile popup org-superstar org-roam-server org-cliplink magit lsp-ivy ivy-xref ivy-rich iedit flycheck dired-open dired-narrow diminish dap-mode counsel company ace-jump-mode)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
